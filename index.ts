@@ -24,8 +24,6 @@ import fs from 'fs';
 const CLUSTERS = {
     'mainnet': 'https://mainnetbeta-rpc.eclipse.xyz',
     'testnet': 'https://testnet.dev2.eclipsenetwork.xyz',
-    'devnet': 'https://staging-rpc.dev2.eclipsenetwork.xyz',
-    'localnet': 'http://127.0.0.1:8899',
 };
 
 const OPTIONS: TransactionBuilderSendAndConfirmOptions = {
@@ -54,13 +52,13 @@ umi.use(keypairIdentity(keypair));
 const creator = createSignerFromKeypair(umi, keypair);
 const owner = creator; // Mint to the creator
 const asset = generateSigner(umi);
-async function uploadImage(path: string, contentType = 'image/png'): Promise<string> {
+async function uploadImage(path: string, contentType = 'image/jpg'): Promise<string> {
     try {
         const image = await readFile(path);
         const fileName = path.split('/').pop() ?? 'unknown.png';
         const genericImage = createGenericFile(image, fileName, { contentType });
         const cid = await uploadToIpfs(genericImage, PINATA_API_KEY, PINATA_SECRET_KEY);
-        console.log(`1. ✅ - Uploaded image to IPFS`);
+        console.log('1. ✅ - Uploaded image to IPFS');
         return cid;
     } catch (error) {
         console.error('1. ❌ - Error uploading image:', error);
@@ -71,7 +69,7 @@ async function uploadImage(path: string, contentType = 'image/png'): Promise<str
 async function uploadMetadata(imageUri: string): Promise<string> {
     try {
         const gatewayUrl = 'https://gateway.pinata.cloud/ipfs'; // Add IPFS gateway URL
-        const fullImageUri = \`\${gatewayUrl}\${imageUri}\`; // Full URI for the image
+        const fullImageUri = '{gatewayUrl}\${imageUri}'; // Full URI for the image
 
         const metadata = {
             name: NFT_DETAILS.name,
@@ -90,7 +88,7 @@ async function uploadMetadata(imageUri: string): Promise<string> {
 
         const file = createGenericFileFromJson(metadata, 'metadata.json');
         const cid = await uploadToIpfs(file, PINATA_API_KEY, PINATA_SECRET_KEY);
-        console.log(`2. ✅ - Uploaded metadata to IPFS`);
+        console.log('2. ✅ - Uploaded metadata to IPFS');
         return cid;
     } catch (error) {
         console.error('2. ❌ - Error uploading metadata:', error);
@@ -118,7 +116,7 @@ async function mintAsset(metadataUri: string): Promise<void> {
             ]
         }).sendAndConfirm(umi, OPTIONS);
         const nftAddress = asset.publicKey.toString();
-        console.log(\`3. ✅ - Minted a new Asset: \${nftAddress}\`);
+        console.log('3. ✅ - Minted a new Asset: ${nftAddress}');
     } catch (error) {
         console.error('3. ❌ - Error minting a new NFT.', error);
     }
@@ -156,10 +154,10 @@ async function verifyOnChainData(metadataUri: string): Promise<void> {
         ];
 
         checks.forEach(({ condition, message }) => {
-            if (!condition) throw new Error(\`Verification failed: \${message}\`);
+            if (!condition) throw new Error('Verification failed: ${message}');
         });
 
-        console.log(`4. ✅ - Verified Asset Data`);
+        console.log('4. ✅ - Verified Asset Data');
     } catch (error) {
         console.error('4. ❌ - Error verifying Asset Data:', error);
     }
